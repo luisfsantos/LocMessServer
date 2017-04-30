@@ -17,9 +17,9 @@ python manage.py migrate
 python manage.py runserver
 ```
 
-Server is run on _8000_ not _8080_
+Server is run on __8000__ not __8080__
 
-###For tests run:
+### For tests run:
 ```
 python manage.py test
 ```
