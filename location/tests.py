@@ -4,6 +4,8 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 
 # Create your tests here.
+from rest_framework.parsers import JSONParser
+
 import location
 from location.models import Location, GPSCoordinate, WIFICoordinate
 from location.serializers import LocationSerializer
@@ -51,3 +53,23 @@ class LocationTestCase(TestCase):
         for ssid in l.coordinate.wificoordinate.ssid_set.all():
             self.assertIn(ssid.name, self.ssids_arco, "The ssids are persisted")
         print(json.dumps(LocationSerializer(l).data))
+
+
+    def test_wifi_location_from_json(self):
+        """Test that a wifi location can be deserialized from json"""
+        location_name = "Arco do CegoS"
+        request = {"name": location_name, "creation_date": "2017-04-30T14:19:35.505954Z", "coordinate": {"wifiSSIDs": [{"name": "edurom"}, {"name": "thompson"}, {"name": "house"}], "type": "WIFI"}}
+        #data = JSONParser().parse(json)
+        serializer = LocationSerializer(data=request)
+        if serializer.is_valid():
+            u1 = User.objects.get(username="luissantos")
+            serializer.save(user=u1)
+            l = Location.objects.get(name=location_name)
+            self.assertEqual(l.name, location_name, "Correct location created")
+            self.assertEqual(l.coordinate.type, "WIFI", "Correct coordinate added")
+            for ssid in l.coordinate.wificoordinate.ssid_set.all():
+                self.assertIn(ssid.name, self.ssids_arco, "The ssids are persisted")
+            print(json.dumps(LocationSerializer(l).data))
+
+        else:
+            self.fail(serializer.errors)

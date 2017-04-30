@@ -1,3 +1,6 @@
+import datetime
+
+import django
 from django.contrib.auth.models import User
 from django.db import models
 
@@ -52,10 +55,9 @@ class WIFICoordinate(Coordinate):
 
 class Location(models.Model):
     name = models.CharField(max_length=50)
-    creation_date = models.DateTimeField(auto_now_add=True)
+    creation_date = models.DateTimeField(default=django.utils.timezone.now, blank=True)
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     coordinate = models.OneToOneField(
         Coordinate,
         on_delete=models.CASCADE,
-        primary_key=True,
     )
