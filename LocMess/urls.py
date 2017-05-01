@@ -19,6 +19,7 @@ from rest_framework_jwt.views import obtain_jwt_token
 
 from users import views as user_views
 from location import views as location_views
+from messaging import views as messaging_views
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
@@ -28,4 +29,6 @@ urlpatterns = [
     url(r'^api/location/create', location_views.create_location),
     url(r'^api/location/list', location_views.list_locations),
     url(r'^api/location/delete', location_views.delete_location),
+    url(r'^api/message/create', messaging_views.create_message),
+    url(r'^api/message/list', messaging_views.list_messages),
 ]

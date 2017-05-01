@@ -34,7 +34,7 @@ class MessageTestCase(TestCase):
         print(json.dumps(MessageSerializer(message).data))
 
     def test_message_creation_from_json(self):
-        json = {"title": "Arco do Cego", "text": "Arco do Cego, os parque!!", "fromDate": "2017-05-01T18:42:15.703112Z", "toDate": "2017-05-01T18:42:15.703122Z", "location_id": 1, "whitelist": [{"keyID": self.key.id, "value" : "benfica"}], "blacklist": []}
+        json = {"title": "Arco do Cego", "text": "Arco do Cego, os parque!!", "fromDate": "2017-05-01T18:42:15.703112Z", "toDate": "2017-05-01T18:42:15.703122Z", "location_id": 1, "whitelist": [{"keyID": 1, "value" : "benfica"}], "blacklist": []}
         message_serializer = MessageSerializer(data=json)
         if message_serializer.is_valid():
             m = message_serializer.save(user=self.u)

@@ -39,9 +39,16 @@ class MessageSerializer(serializers.ModelSerializer):
                                              toDate=validated_data['toDate'],
                                              location=Location.objects.get(id = validated_data['location']['id']),
                                              author = validated_data['user'])
+
             for value in validated_data["whitelist"]:
-                Whitelist.objects.create(key=Keys.objects.get(id=value['key']['id']), value = value["value"], message = message)
+                try:
+                    Whitelist.objects.create(key=Keys.objects.get(id=value['key']['id']), value = value["value"], message = message)
+                except Keys.DoesNotExist:
+                    raise ValueError("Key with id does not exist!", value['key']['id'])
             for value in validated_data["blacklist"]:
-                Blacklist.objects.create(key=Keys.objects.get(id=value['keyID']['id']), value = value["value"], message = message)
+                try:
+                    Blacklist.objects.create(key=Keys.objects.get(id=value['keyID']['id']), value = value["value"], message = message)
+                except Keys.DoesNotExist:
+                    raise ValueError("Key with id does not exist!", value['key']['id'])
 
             return message
