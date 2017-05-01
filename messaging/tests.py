@@ -7,6 +7,7 @@ from django.test import TestCase
 from location.models import GPSCoordinate, Location
 from messaging.models import Message
 from messaging.serializers import MessageSerializer
+from users.models import Keys
 
 
 class MessageTestCase(TestCase):
@@ -20,6 +21,7 @@ class MessageTestCase(TestCase):
                                    latitude=self.location_gps[0])
 
         self.l = Location.objects.create(name="Arco do Cego", author=self.u, coordinate=gps)
+        self.key = Keys.objects.create(name="clube")
 
     def test_message_is_created(self):
         """Test that a message can be created"""
@@ -32,9 +34,14 @@ class MessageTestCase(TestCase):
         print(json.dumps(MessageSerializer(message).data))
 
     def test_message_creation_from_json(self):
-        json = {"title": "Arco do Cego", "text": "Arco do Cego, os parque!!", "fromDate": "2017-05-01T18:42:15.703112Z", "toDate": "2017-05-01T18:42:15.703122Z", "location_id": 1, "whitelist": [], "blacklist": []}
+        json = {"title": "Arco do Cego", "text": "Arco do Cego, os parque!!", "fromDate": "2017-05-01T18:42:15.703112Z", "toDate": "2017-05-01T18:42:15.703122Z", "location_id": 1, "whitelist": [{"keyID": self.key.id, "value" : "benfica"}], "blacklist": []}
         message_serializer = MessageSerializer(data=json)
         if message_serializer.is_valid():
-            message_serializer.save(user=self.u)
+            m = message_serializer.save(user=self.u)
+            self.assertEqual(m.title, "Arco do Cego", "Title matches!")
+            self.assertEqual(m.text, "Arco do Cego, os parque!!")
+            self.assertEqual(m.author.username, "luissantos")
+            for item in m.whitelist.all():
+                self.assertEqual(item.key.id, 1)
         else:
             self.fail(message_serializer.errors)
