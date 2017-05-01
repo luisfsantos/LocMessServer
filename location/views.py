@@ -1,3 +1,6 @@
+import json
+
+from django.db import transaction
 from django.shortcuts import render
 
 # Create your views here.
@@ -26,4 +29,22 @@ def create_location(request):
 def list_locations(request):
     serializer = LocationSerializer(Location.objects.all(), many=True)
     return Response(JSONResponse().addData("Locations", serializer.data).send(),
+                        status=status.HTTP_200_OK)
+
+@api_view(["POST"])
+def delete_location(request):
+    data = request.data["data"]
+    location_id = map(lambda x: x["id"], data["location"])
+    response = JSONResponse()
+    with transaction.atomic():
+        i = 0
+        for id in location_id:
+            i += 1
+            try:
+                location = Location.objects.get(id=id)
+                location.delete()
+                response.addData(i, "Location with id: " + str(id) + " was deleted.")
+            except Location.DoesNotExist:
+                response.addError(i, "Location with id: " + str(id) + " does not exist.")
+    return Response(response.addData("status", "completed deletion").send(),
                         status=status.HTTP_200_OK)
