@@ -12,17 +12,28 @@ from messaging.serializers import MessageSerializer
 
 @api_view(["POST"])
 def create_message(request):
-    message_serializer = MessageSerializer(data=request.data["data"])
-    if message_serializer.is_valid():
-        m = message_serializer.save(user=request.user)
-        return Response(JSONResponse().addData("Message", message_serializer.data).
-                        addData("status", "Message created!").
-                        send(),
-                        status=status.HTTP_201_CREATED)
+    if request.data["data"]:
+        message_serializer = MessageSerializer(data=request.data["data"])
+        if message_serializer.is_valid():
+            try:
+                m = message_serializer.save(user=request.user)
+                return Response(JSONResponse().addData("Message", message_serializer.data).
+                            addData("status", "Message created!").
+                            send(),
+                            status=status.HTTP_201_CREATED)
+            except ValueError as err:
+                return Response(
+                JSONResponse().addError(0, "Message could not be created").addError(1, err.args).send(),
+                status=status.HTTP_400_BAD_REQUEST)
+
+        else:
+            return Response(
+                JSONResponse().addError(0, "Message could not be created").addError(1, message_serializer.errors).send(),
+                status=status.HTTP_400_BAD_REQUEST)
     else:
         return Response(
-            JSONResponse().addError(0, "Message could not be created").addError(1, message_serializer.errors).send(),
-            status=status.HTTP_400_BAD_REQUEST)
+                JSONResponse().addError(0, "No data in request").send(),
+                status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(["GET"])
 def list_messages(request):

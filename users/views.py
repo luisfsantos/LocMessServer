@@ -7,7 +7,8 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from json_api.JSONResponse import JSONResponse
-from users.serializers import UserSerializer
+from users.models import Keys
+from users.serializers import UserSerializer, KeySerializer
 
 
 @api_view(["POST"])
@@ -28,3 +29,29 @@ def create_user(request):
 def test_login(request):
     if User.objects.get_by_natural_key(request.data["username"]):
         return Response(True, status=status.HTTP_200_OK)
+
+
+@api_view(["POST"])
+def create_key(request):
+    if request.data["data"]:
+        key_serializer = KeySerializer(data=request.data["data"])
+        if key_serializer.is_valid():
+            key_serializer.save()
+            return Response(JSONResponse().addData("Key", key_serializer.data).
+                            addData("status", "Key created!").
+                            send(),
+                            status=status.HTTP_201_CREATED)
+        else:
+            return Response(
+                JSONResponse().addError(0, "Key could not be created").addError(1, key_serializer.errors).send(),
+                status=status.HTTP_400_BAD_REQUEST)
+    else:
+        return Response(
+                JSONResponse().addError(0, "No data in request").send(),
+                status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(["GET"])
+def list_keys(request):
+    serializer = KeySerializer(Keys.objects.all(), many=True)
+    return Response(JSONResponse().addData("Keys", serializer.data).send(),
+                    status=status.HTTP_200_OK)
