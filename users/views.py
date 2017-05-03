@@ -16,7 +16,7 @@ from users.serializers import UserSerializer, KeySerializer, InfoSerializer
 @permission_classes((AllowAny,))
 def create_user(request):
     if request.method == "POST":
-        user_serializer = UserSerializer(data=request.data["data"])
+        user_serializer = UserSerializer(data=request.data)
         if user_serializer.is_valid():
             User.objects.create_user(username=user_serializer.validated_data["username"], password=user_serializer.validated_data["password"])
             return Response(JSONResponse().addData("User", user_serializer.data).addData("status", "User created!").send(), status=status.HTTP_201_CREATED)
