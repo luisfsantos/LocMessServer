@@ -32,5 +32,6 @@ urlpatterns = [
     url(r'^api/message/create', messaging_views.create_message),
     url(r'^api/message/list', messaging_views.list_messages),
     url(r'^api/keys/list', user_views.list_keys),
+    url(r'^api/keys/create', user_views.create_key),
     url(r'^api/user/info/create', user_views.post_info),
 ]
