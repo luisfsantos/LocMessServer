@@ -13,7 +13,11 @@ class JSONResponse():
         if self.data:
             response["data"] = self.data
         if self.errors:
-            response["errors"] = self.errors
+            errors = []
+            for error_key in self.errors.keys():
+                data = {"code":error_key, "message":self.errors[error_key]}
+                errors.append(data)
+            response["errors"] = errors
         if self.meta:
             response["meta"] = self.meta
         return response
