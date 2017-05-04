@@ -16,6 +16,7 @@ class Message(models.Model):
     toDate = models.DateTimeField(default=django.utils.timezone.now, blank=True)
     location = models.ForeignKey(Location)
 
+
 class Whitelist(models.Model):
     key = models.ForeignKey(Keys, related_name="+")
     value = models.CharField(max_length=100)

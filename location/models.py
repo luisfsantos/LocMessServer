@@ -3,6 +3,7 @@ import datetime
 import django
 from django.contrib.auth.models import User
 from django.db import models
+from geopy.distance import vincenty
 
 # Create your models here.
 import location
@@ -24,6 +25,7 @@ class Coordinate(models.Model):
         default=EMPTY,
     )
 
+
 class SSID(models.Model):
     coordinate = models.ForeignKey(Coordinate)
     name = models.CharField(max_length=50)
@@ -41,6 +43,11 @@ class GPSCoordinate(Coordinate):
                                            radius = radius)
         return gps
 
+    def in_range(self, user_location):
+        user_at = (user_location['latitude'], user_location['longitude'])
+        message_at = (self.latitude, self.longitude)
+        return vincenty(user_at, message_at).meters <= self.radius
+
 class WIFICoordinate(Coordinate):
 
     @classmethod
@@ -51,7 +58,11 @@ class WIFICoordinate(Coordinate):
             wifi.ssid_set.add(ss)
 
         return wifi
-    pass
+
+    def in_range(self, user_location):
+        user_ssids = map(lambda x: x['ssid'], user_location)
+        location_ssids = map(lambda  x: x.name, self.ssid_set.all())
+        return len(set(user_ssids).intersection(location_ssids)) > 0
 
 class Location(models.Model):
     name = models.CharField(max_length=50)
@@ -61,3 +72,9 @@ class Location(models.Model):
         Coordinate,
         on_delete=models.CASCADE,
     )
+
+    def is_valid(self, user_location):
+        if hasattr(self.coordinate, "gpscoordinate"):
+            return self.coordinate.gpscoordinate.in_range(user_location = user_location)
+        elif hasattr(self.coordinate, "wificoordinate"):
+            return self.coordinate.wificoordinate.in_range(user_location = user_location)

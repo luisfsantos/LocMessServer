@@ -47,7 +47,7 @@ class MessageSerializer(serializers.ModelSerializer):
                     raise ValueError("keyID", value['key']['id'])
             for value in validated_data["blacklist"]:
                 try:
-                    Blacklist.objects.create(key=Keys.objects.get(id=value['keyID']['id']), value = value["value"], message = message)
+                    Blacklist.objects.create(key=Keys.objects.get(id=value['key']['id']), value = value["value"], message = message)
                 except Keys.DoesNotExist:
                     raise ValueError("keyID", value['key']['id'])
 

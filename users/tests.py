@@ -30,7 +30,6 @@ class UserTestCase(TestCase):
         self.assertIsNotNone(l1, "luissantos2 exists")
         self.assertEqual(info.value, "benfica")
         self.assertEqual(info.key.name, "clube")
-        print(json.dumps(InfoSerializer(info).data))
 
     def test_info_created_from_json(self):
         json = {"key": {"id": 1, "name": "clube"}, "user": "luissantos", "value": "benfica"}

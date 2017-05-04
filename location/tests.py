@@ -38,7 +38,6 @@ class LocationTestCase(TestCase):
         self.assertTrue(hasattr(l.coordinate.gpscoordinate, "longitude"), "GPS has longitude")
         self.assertTrue(hasattr(l.coordinate.gpscoordinate, "latitude"), "GPS has latitude")
         self.assertEqual(l.coordinate.gpscoordinate.latitude, Decimal(self.location_gps[0]), "latitude is correct")
-        print(json.dumps(LocationSerializer(l).data))
 
 
     def test_wifi_location_is_created(self):
@@ -52,7 +51,6 @@ class LocationTestCase(TestCase):
         self.assertEqual(l.coordinate.type, "WIFI", "Correct coordinate added")
         for ssid in l.coordinate.wificoordinate.ssid_set.all():
             self.assertIn(ssid.name, self.ssids_arco, "The ssids are persisted")
-        print(json.dumps(LocationSerializer(l).data))
 
 
     def test_wifi_location_from_json(self):
@@ -69,7 +67,6 @@ class LocationTestCase(TestCase):
             self.assertEqual(l.coordinate.type, "WIFI", "Correct coordinate added")
             for ssid in l.coordinate.wificoordinate.ssid_set.all():
                 self.assertIn(ssid.name, self.ssids_arco, "The ssids are persisted")
-            print(json.dumps(LocationSerializer(l).data))
 
         else:
             self.fail(serializer.errors)

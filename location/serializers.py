@@ -10,7 +10,7 @@ from location.models import Coordinate, WIFICoordinate, GPSCoordinate, SSID, Loc
 class GPSCoordinateSerializer(serializers.ModelSerializer):
     class Meta:
         model = GPSCoordinate
-        fields = '__all__'
+        fields = ('latitude', 'longitude', 'radius', 'type')
 
 
 class SSIDSerializer(serializers.ModelSerializer):
@@ -23,7 +23,7 @@ class WIFICoordinateSerializer(serializers.ModelSerializer):
     wifiSSIDs = SSIDSerializer(source='ssid_set', many=True)
     class Meta:
         model = WIFICoordinate
-        fields = '__all__'
+        fields = fields = ('type', 'wifiSSIDs')
         depth = 2
 
 
@@ -65,3 +65,15 @@ class LocationSerializer(serializers.Serializer):
                 coordinate = WIFICoordinate.create(ssids=map(lambda x: x["name"], validated_data["coordinate"]["ssid_set"]))
 
             return Location.objects.create(name = validated_data["name"], author = validated_data["user"], creation_date=validated_data["creation_date"], coordinate = coordinate)
+
+
+class GPSSerializer(serializers.Serializer):
+    latitude = serializers.DecimalField(max_digits=30, decimal_places=20)
+    longitude = serializers.DecimalField(max_digits=30, decimal_places=20)
+
+class WIFISerializer(serializers.Serializer):
+    ssid = serializers.CharField()
+
+class UserLocationSerializer(serializers.Serializer):
+    gps = GPSSerializer()
+    wifi = WIFISerializer(many=True)

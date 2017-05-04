@@ -7,8 +7,11 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from json_api.JSONResponse import JSONResponse
+from location.serializers import UserLocationSerializer
+from messaging.serializers import MessageSerializer
 from users.models import Keys
 from users.serializers import UserSerializer, KeySerializer, InfoSerializer
+from users.user_location import UserLocation
 
 
 @api_view(["POST"])
@@ -69,6 +72,27 @@ def post_info(request):
         else:
             return Response(
                 JSONResponse().addError(0, "Information could not be added").addError(1, info_serializer.errors).send(),
+                status=status.HTTP_400_BAD_REQUEST)
+    else:
+        return Response(
+                JSONResponse().addError(0, "No data in request").send(),
+                status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+def user_update_location(request):
+    if request.data["data"]:
+        user_location_serializer = UserLocationSerializer(data=request.data['data'])
+        if user_location_serializer.is_valid():
+            messages = UserLocation(request.user, user_location_serializer.validated_data).getMessages()
+            messages_serializer = MessageSerializer(messages, many=True)
+            return Response(JSONResponse().addData("Location", user_location_serializer.data).
+                            addData("Messages", messages_serializer.data).
+                            send(),
+                            status=status.HTTP_201_CREATED)
+        else:
+            return Response(
+                JSONResponse().addError(0, "User location could not be loaded").addError(1, user_location_serializer.errors).send(),
                 status=status.HTTP_400_BAD_REQUEST)
     else:
         return Response(

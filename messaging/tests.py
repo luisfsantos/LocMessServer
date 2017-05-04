@@ -7,7 +7,8 @@ from django.test import TestCase
 from location.models import GPSCoordinate, Location
 from messaging.models import Message
 from messaging.serializers import MessageSerializer
-from users.models import Keys
+from users.models import Keys, Info
+from users.user_location import UserLocation
 
 
 class MessageTestCase(TestCase):
@@ -22,6 +23,7 @@ class MessageTestCase(TestCase):
 
         self.l = Location.objects.create(name="Arco do Cego", author=self.u, coordinate=gps)
         self.key = Keys.objects.create(name="clube")
+        Info.objects.create(key=self.key, user=self.u, value="sporting")
 
     def test_message_is_created(self):
         """Test that a message can be created"""
@@ -31,7 +33,6 @@ class MessageTestCase(TestCase):
                                              text=message_text,
                                              location=self.l,
                                          author = self.u)
-        print(json.dumps(MessageSerializer(message).data))
 
     def test_message_creation_from_json(self):
         json = {"title": "Arco do Cego", "text": "Arco do Cego, os parque!!", "fromDate": "2017-05-01T18:42:15.703112Z", "toDate": "2017-05-01T18:42:15.703122Z", "location_id": 1, "whitelist": [{"keyID": 1, "value" : "benfica"}], "blacklist": []}
@@ -45,3 +46,99 @@ class MessageTestCase(TestCase):
                 self.assertEqual(item.key.id, 1)
         else:
             self.fail(message_serializer.errors)
+
+    def test_user_get_message_blacklist(self):
+        json = [{"title": "CasaCatarina", "text": "Arco do Cego, os parque!!", "fromDate": "2017-05-01T18:42:15.703112Z",
+                "toDate": "2017-05-01T18:42:15.703122Z", "location_id": 1,
+                "whitelist": [], "blacklist": [{"keyID": 1, "value": "sporting"}]},
+                {"title": "CasaLuis", "text": "Arco do Cego, os parque!!",
+                 "fromDate": "2017-05-01T18:42:15.703112Z",
+                 "toDate": "2017-05-01T18:42:15.703122Z", "location_id": 1,
+                 "whitelist": [], "blacklist": [{"keyID": 1, "value": "benfica"}]}
+                ]
+        message_serializer = MessageSerializer(data=json, many=True)
+        if message_serializer.is_valid():
+            m = message_serializer.save(user=self.u)
+            messages = UserLocation(self.u, {"gps": {"radius": self.location_gps[2],
+                                       "longitude": self.location_gps[1],
+                                       "latitude": self.location_gps[0]}, "wifi":[{"ssid": "edurom"}]}).getMessages()
+            self.assertEqual(len(messages), 1)
+            self.assertEqual(messages[0].title, "CasaLuis")
+        else:
+            self.fail("Serialization of message is not possible")
+
+    def test_user_get_message_whitelist(self):
+        json = [{"title": "CasaCatarina", "text": "Arco do Cego, os parque!!", "fromDate": "2017-05-01T18:42:15.703112Z",
+                "toDate": "2017-05-01T18:42:15.703122Z", "location_id": 1,
+                "whitelist": [{"keyID": 1, "value": "benfica"}], "blacklist": []},
+                {"title": "CasaLuis", "text": "Arco do Cego, os parque!!",
+                 "fromDate": "2017-05-01T18:42:15.703112Z",
+                 "toDate": "2017-05-01T18:42:15.703122Z", "location_id": 1,
+                 "whitelist": [{"keyID": 1, "value": "sporting"}], "blacklist": []},
+                ]
+        message_serializer = MessageSerializer(data=json, many=True)
+        if message_serializer.is_valid():
+            m = message_serializer.save(user=self.u)
+            messages = UserLocation(self.u, {"gps": {"radius": self.location_gps[2],
+                                       "longitude": self.location_gps[1],
+                                       "latitude": self.location_gps[0]}, "wifi":[{"ssid": "edurom"}]}).getMessages()
+            self.assertEqual(len(messages), 1)
+            self.assertEqual(messages[0].title, "CasaLuis")
+        else:
+            self.fail("Serialization of message is not possible")
+
+    def test_user_not_get_message_whitelist(self):
+        json = [{"title": "CasaCatarina", "text": "Arco do Cego, os parque!!", "fromDate": "2017-05-01T18:42:15.703112Z",
+                "toDate": "2017-05-01T18:42:15.703122Z", "location_id": 1,
+                "whitelist": [{"keyID": 1, "value": "benfica"}], "blacklist": []},
+                {"title": "CasaLuis", "text": "Arco do Cego, os parque!!",
+                 "fromDate": "2017-05-01T18:42:15.703112Z",
+                 "toDate": "2017-05-01T18:42:15.703122Z", "location_id": 1,
+                 "whitelist": [{"keyID": 1, "value": "benfica"}], "blacklist": []},
+                ]
+        message_serializer = MessageSerializer(data=json, many=True)
+        if message_serializer.is_valid():
+            m = message_serializer.save(user=self.u)
+            messages = UserLocation(self.u, {"gps": {"radius": self.location_gps[2],
+                                       "longitude": self.location_gps[1],
+                                       "latitude": self.location_gps[0]}, "wifi":[{"ssid": "edurom"}]}).getMessages()
+            self.assertEqual(len(messages), 0)
+        else:
+            self.fail("Serialization of message is not possible")
+
+    def test_user_not_get_message_blacklist(self):
+        json = [{"title": "CasaCatarina", "text": "Arco do Cego, os parque!!", "fromDate": "2017-05-01T18:42:15.703112Z",
+                "toDate": "2017-05-01T18:42:15.703122Z", "location_id": 1,
+                "whitelist": [{"keyID": 1, "value": "benfica"}], "blacklist": []},
+                {"title": "CasaLuis", "text": "Arco do Cego, os parque!!",
+                 "fromDate": "2017-05-01T18:42:15.703112Z",
+                 "toDate": "2017-05-01T18:42:15.703122Z", "location_id": 1,
+                 "whitelist": [], "blacklist": [{"keyID": 1, "value": "sporting"}]},
+                ]
+        message_serializer = MessageSerializer(data=json, many=True)
+        if message_serializer.is_valid():
+            m = message_serializer.save(user=self.u)
+            messages = UserLocation(self.u, {"gps": {"radius": self.location_gps[2],
+                                       "longitude": self.location_gps[1],
+                                       "latitude": self.location_gps[0]}, "wifi":[{"ssid": "edurom"}]}).getMessages()
+            self.assertEqual(len(messages), 0)
+        else:
+            self.fail("Serialization of message is not possible")
+
+    def test_user_get_message_no_filter(self):
+        json = [
+                {"title": "CasaLuis", "text": "Arco do Cego, os parque!!",
+                 "fromDate": "2017-05-01T18:42:15.703112Z",
+                 "toDate": "2017-05-01T18:42:15.703122Z", "location_id": 1,
+                 "whitelist": [], "blacklist": []},
+                ]
+        message_serializer = MessageSerializer(data=json, many=True)
+        if message_serializer.is_valid():
+            m = message_serializer.save(user=self.u)
+            messages = UserLocation(self.u, {"gps": {"radius": self.location_gps[2],
+                                       "longitude": self.location_gps[1],
+                                       "latitude": self.location_gps[0]}, "wifi":[{"ssid": "edurom"}]}).getMessages()
+            self.assertEqual(len(messages), 1)
+            self.assertEqual(messages[0].title, "CasaLuis")
+        else:
+            self.fail("Serialization of message is not possible")
