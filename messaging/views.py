@@ -1,3 +1,4 @@
+from django.db import transaction
 from django.shortcuts import render
 
 # Create your views here.
@@ -15,17 +16,11 @@ def create_message(request):
     if request.data["data"]:
         message_serializer = MessageSerializer(data=request.data["data"])
         if message_serializer.is_valid():
-            try:
-                m = message_serializer.save(user=request.user)
-                return Response(JSONResponse().addData("Message", message_serializer.data).
-                            addData("status", "Message created!").
-                            send(),
-                            status=status.HTTP_201_CREATED)
-            except ValueError as err:
-                return Response(
-                JSONResponse().addError(0, "Message could not be created").addError(1, err.args).send(),
-                status=status.HTTP_400_BAD_REQUEST)
-
+            m = message_serializer.save(user=request.user)
+            return Response(JSONResponse().addData("Message", message_serializer.data).
+                        addData("status", "Message created!").
+                        send(),
+                        status=status.HTTP_201_CREATED)
         else:
             return Response(
                 JSONResponse().addError(0, "Message could not be created").addError(1, message_serializer.errors).send(),
@@ -40,3 +35,17 @@ def list_messages(request):
     serializer = MessageSerializer(Message.objects.all(), many=True)
     return Response(JSONResponse().addData("Messages", serializer.data).send(),
                         status=status.HTTP_200_OK)
+
+@api_view(["DELETE"])
+def unpost_message(request, id):
+    response = JSONResponse()
+    with transaction.atomic():
+        try:
+            message = Message.objects.get(id=id, author=request.user)
+            message.delete()
+            return Response(response.addData("status", "completed deletion")
+                            .addData(id, "Message with id: " + str(id) + " was deleted.")
+                            .send(),
+                    status=status.HTTP_200_OK)
+        except Message.DoesNotExist:
+            return Response(response.addError(0, "Message with id: " + str(id) + " does not exist or cannot be deleted").send(), status=status.HTTP_400_BAD_REQUEST)

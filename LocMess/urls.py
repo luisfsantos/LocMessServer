@@ -28,10 +28,12 @@ urlpatterns = [
     url(r'^api/user/login', obtain_jwt_token),
     url(r'^api/location/create', location_views.create_location),
     url(r'^api/location/list', location_views.list_locations),
-    url(r'^api/location/delete', location_views.delete_location),
+    url(r'^api/location/(?P<location_id>\d+)/delete', location_views.delete_location),
     url(r'^api/message/create', messaging_views.create_message),
     url(r'^api/message/list', messaging_views.list_messages),
+    url(r'^api/message/(?P<id>\d+)/delete', messaging_views.unpost_message),
     url(r'^api/keys/list', user_views.list_keys),
     url(r'^api/keys/create', user_views.create_key),
     url(r'^api/user/info/create', user_views.post_info),
+    url(r'^api/messages/poll', user_views.user_update_location),
 ]

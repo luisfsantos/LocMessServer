@@ -32,7 +32,7 @@ class UserTestCase(TestCase):
         self.assertEqual(info.key.name, "clube")
 
     def test_info_created_from_json(self):
-        json = {"key": {"id": 1, "name": "clube"}, "user": "luissantos", "value": "benfica"}
+        json = {"key": "clube", "user": "luissantos", "value": "benfica"}
         info_serializer = InfoSerializer(data= json)
         if info_serializer.is_valid():
             l1 = User.objects.get(username="luissantos")

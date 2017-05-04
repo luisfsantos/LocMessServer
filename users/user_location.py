@@ -13,6 +13,7 @@ class UserLocation():
         self.user = user
         self.gps_location = current_location["gps"]
         self.wifi_location = current_location["wifi"]
+        self.date = current_location["date"]
 
     def infomation_is_valid(self, message):
         user_info = self.user.info.all()
@@ -43,9 +44,9 @@ class UserLocation():
         return message_location.is_valid(user_location = loc)
 
     def getMessages(self):
-        all_messages = Message.objects.all()
+        all_messages = Message.objects.filter(fromDate__lte = self.date, toDate__gte = self.date)
         user_messages = []
         for message in all_messages:
-            if self.infomation_is_valid(message = message) and self.location_in_range(message_location = message.location):
+            if self.location_in_range(message_location = message.location) and self.infomation_is_valid(message = message):
                 user_messages.append(message)
         return user_messages

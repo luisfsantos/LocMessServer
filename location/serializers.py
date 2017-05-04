@@ -77,3 +77,4 @@ class WIFISerializer(serializers.Serializer):
 class UserLocationSerializer(serializers.Serializer):
     gps = GPSSerializer()
     wifi = WIFISerializer(many=True)
+    date = serializers.DateTimeField()

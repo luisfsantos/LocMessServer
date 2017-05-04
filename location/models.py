@@ -3,7 +3,7 @@ import datetime
 import django
 from django.contrib.auth.models import User
 from django.db import models
-from geopy.distance import vincenty
+from geopy.distance import vincenty, great_circle
 
 # Create your models here.
 import location

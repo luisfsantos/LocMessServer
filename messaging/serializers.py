@@ -7,29 +7,50 @@ from users.models import Keys
 
 
 class WhitelistSerializer(serializers.ModelSerializer):
-    keyID = serializers.IntegerField(source='key.id')
+    key = serializers.CharField(source='key.name')
 
     class Meta:
         model = Whitelist
-        fields = ('keyID', 'value')
+        fields = ('key', 'value')
+
+    def validate_key(self, value):
+        try:
+            Keys.objects.get(name=value)
+            return value
+        except Keys.DoesNotExist:
+            raise serializers.ValidationError("key " + value + " does not exist")
 
 class BlacklistSerializer(serializers.ModelSerializer):
-    keyID = serializers.IntegerField(source='key.id')
+    key = serializers.CharField(source='key.name')
 
     class Meta:
         model = Blacklist
-        fields = ('keyID', 'value')
+        fields = ('key', 'value')
+
+    def validate_key(self, value):
+        try:
+            Keys.objects.get(name=value)
+            return value
+        except Keys.DoesNotExist:
+            raise serializers.ValidationError("key " + value + " does not exist")
 
 
 class MessageSerializer(serializers.ModelSerializer):
-    location_id = serializers.IntegerField(source="location.id")
+    location = serializers.IntegerField(source="location.id")
     whitelist = WhitelistSerializer(many=True)
     blacklist = BlacklistSerializer(many=True)
 
     class Meta:
         model = Message
-        fields = ('id', 'title', 'text', 'fromDate', 'toDate', 'location_id', 'whitelist', 'blacklist')
+        fields = ('id', 'title', 'text', 'fromDate', 'toDate', 'location', 'whitelist', 'blacklist')
         read_only_fields = ('id', )
+
+    def validate_location(self, value):
+        try:
+            Location.objects.get(id=value)
+            return value
+        except Location.DoesNotExist:
+            raise serializers.ValidationError("location does not exist")
 
     def create(self, validated_data):
         with transaction.atomic():
@@ -41,14 +62,8 @@ class MessageSerializer(serializers.ModelSerializer):
                                              author = validated_data['user'])
 
             for value in validated_data["whitelist"]:
-                try:
-                    Whitelist.objects.create(key=Keys.objects.get(id=value['key']['id']), value = value["value"], message = message)
-                except Keys.DoesNotExist:
-                    raise ValueError("keyID", value['key']['id'])
+                Whitelist.objects.create(key=Keys.objects.get(name=value['key']['name']), value = value["value"], message = message)
             for value in validated_data["blacklist"]:
-                try:
-                    Blacklist.objects.create(key=Keys.objects.get(id=value['key']['id']), value = value["value"], message = message)
-                except Keys.DoesNotExist:
-                    raise ValueError("keyID", value['key']['id'])
+                Blacklist.objects.create(key=Keys.objects.get(name=value['key']['name']), value = value["value"], message = message)
 
             return message

@@ -23,27 +23,28 @@ class KeySerializer(serializers.ModelSerializer):
         with transaction.atomic():
             return Keys.objects.create(name=validated_data['name'])
 
-class KeyInfoSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Keys
-        fields = ('id', 'name')
-
-    def to_internal_value(self, data):
-        try:
-            return Keys.objects.get(pk=data.get('id'))
-        except Keys.DoesNotExist:
-            return Keys.objects.create(name = data.get('name'))
-
 class InfoSerializer(serializers.ModelSerializer):
-    user = serializers.CharField(source='user.username')
-    key = KeyInfoSerializer()
+    user = serializers.CharField(source='user.username', read_only=True)
+    key = serializers.CharField(source='key.name' )
     class Meta:
         model = Info
         fields = ('key', 'user', 'value')
-        read_only_fields = ('user',)
+
+    def validate_key(self, value):
+        try:
+            return Keys.objects.get(name=value)
+        except Keys.DoesNotExist:
+            return Keys.objects.create(name = value)
 
     def create(self, validated_data):
         with transaction.atomic():
-            return Info.objects.create(key = validated_data['key'],
+            try:
+                info = Info.objects.get(key = validated_data['key']['name'],
+                                       user = validated_data['user'])
+                info.value = validated_data['value']
+                info.save()
+                return info
+            except Info.DoesNotExist:
+                return Info.objects.create(key = validated_data['key']['name'],
                                        user = validated_data['user'],
                                        value = validated_data['value'])
