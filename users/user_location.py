@@ -1,4 +1,5 @@
 import json
+from timeit import timeit
 
 import location
 from location.models import Location
@@ -17,21 +18,13 @@ class UserLocation():
 
     def infomation_is_valid(self, message):
         user_info = self.user.info.all()
-        for info in user_info:
-            try:
-                white = message.whitelist.get(key=info.key)
-                if white.value != info.value:
-                    return False
-            except Whitelist.DoesNotExist:
-                pass
+        information = user_info.values_list('key', 'value')
+        in_whitelist = not set(information).isdisjoint(set(message.whitelist.values_list('key', 'value')))
+        in_blacklist = not set(information).isdisjoint(set(message.blacklist.values_list('key', 'value')))
 
-            try:
-                black = message.blacklist.get(key=info.key)
-                if black.value == info.value:
-                    return False
-            except Blacklist.DoesNotExist:
-                pass
-        return True
+        return in_whitelist and not in_blacklist
+
+
 
     def location_in_range(self, message_location):
         coordinate_type = message_location.coordinate.type

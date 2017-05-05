@@ -9,5 +9,5 @@ class Info(models.Model):
     user = models.ForeignKey(User, related_name="info")
     key = models.ForeignKey(Keys, related_name="+")
 
-    class Meta:
-        unique_together = (("user", "key"),)
+    #class Meta:
+    #    unique_together = (("user", "key"),)
