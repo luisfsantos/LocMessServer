@@ -32,7 +32,7 @@ def create_message(request):
 
 @api_view(["GET"])
 def list_messages(request):
-    serializer = MessageSerializer(Message.objects.all(), many=True)
+    serializer = MessageSerializer(Message.objects.get(user=request.user), many=True)
     return Response(JSONResponse().addData("Messages", serializer.data).send(),
                         status=status.HTTP_200_OK)
 

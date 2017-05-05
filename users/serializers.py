@@ -28,7 +28,8 @@ class InfoSerializer(serializers.ModelSerializer):
     key = serializers.CharField(source='key.name' )
     class Meta:
         model = Info
-        fields = ('key', 'user', 'value')
+        fields = ('id', 'key', 'user', 'value')
+        read_only_fields = ('id',)
 
     def validate_key(self, value):
         try:

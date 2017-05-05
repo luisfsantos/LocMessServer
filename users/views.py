@@ -1,6 +1,7 @@
 
 # Create your views here.
 from django.contrib.auth.models import User
+from django.db import transaction
 from rest_framework import status
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.permissions import AllowAny
@@ -9,7 +10,7 @@ from rest_framework.response import Response
 from json_api.JSONResponse import JSONResponse
 from location.serializers import UserLocationSerializer
 from messaging.serializers import MessageSerializer
-from users.models import Keys
+from users.models import Keys, Info
 from users.serializers import UserSerializer, KeySerializer, InfoSerializer
 from users.user_location import UserLocation
 
@@ -98,3 +99,24 @@ def user_update_location(request):
         return Response(
                 JSONResponse().addError(0, "No data in request").send(),
                 status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(["DELETE"])
+def delete_information(request, id):
+    response = JSONResponse()
+    with transaction.atomic():
+        try:
+            information = Info.objects.get(id=id, user=request.user)
+            information.delete()
+            return Response(response.addData("status", "completed deletion")
+                            .addData(id, "Information with id: " + str(id) + " was deleted.")
+                            .send(),
+                    status=status.HTTP_200_OK)
+        except Info.DoesNotExist:
+            return Response(response.addError(0, "Information with id: " + str(id) + " does not exist or cannot be deleted").send(), status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["GET"])
+def list_information(request):
+    serializer = InfoSerializer(Info.objects.filter(user=request.user), many=True)
+    return Response(JSONResponse().addData("User Information", serializer.data).send(),
+                    status=status.HTTP_200_OK)

@@ -26,6 +26,8 @@ urlpatterns = [
     url(r'^api/user/create', user_views.create_user),
     url(r'^api/user/test/login', user_views.test_login),
     url(r'^api/user/login', obtain_jwt_token),
+    url(r'^api/user/info/(?P<id>\d+)/delete', user_views.delete_information),
+    url(r'^api/user/info/list', user_views.list_information),
     url(r'^api/location/create', location_views.create_location),
     url(r'^api/location/list', location_views.list_locations),
     url(r'^api/location/(?P<location_id>\d+)/delete', location_views.delete_location),
