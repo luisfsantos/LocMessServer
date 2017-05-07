@@ -19,8 +19,14 @@ class UserLocation():
     def infomation_is_valid(self, message):
         user_info = self.user.info.all()
         information = user_info.values_list('key', 'value')
-        in_whitelist = not set(information).isdisjoint(set(message.whitelist.values_list('key', 'value')))
-        in_blacklist = not set(information).isdisjoint(set(message.blacklist.values_list('key', 'value')))
+        whitelist = message.whitelist.values_list('key', 'value')
+        in_whitelist = (not set(information).isdisjoint(set(whitelist))) or len(whitelist) == 0
+
+        if not in_whitelist:
+            return False
+
+        blacklist = message.blacklist.values_list('key', 'value')
+        in_blacklist = not set(information).isdisjoint(set(blacklist))
 
         return in_whitelist and not in_blacklist
 

@@ -35,7 +35,7 @@ class MessageTestCase(TestCase):
                                          author = self.u)
 
     def test_message_creation_from_json(self):
-        json = {"title": "Arco do Cego", "text": "Arco do Cego, os parque!!", "fromDate": "2017-05-01T18:42:15.703112Z", "toDate": "2017-06-01T18:42:15.703122Z", "location": 1, "whitelist": [{"key": "clube", "value" : "benfica"}], "blacklist": []}
+        json = {"title": "Arco do Cego", "text": "Arco do Cego, os parque!!", "fromDate": "2017-05-01T18:42:15.703112Z", "toDate": "2017-06-01T18:42:15.703122Z", "location": {"id":1}, "whitelist": [{"key": "clube", "value" : "benfica"}], "blacklist": []}
         message_serializer = MessageSerializer(data=json)
         if message_serializer.is_valid():
             m = message_serializer.save(user=self.u)
@@ -49,11 +49,11 @@ class MessageTestCase(TestCase):
 
     def test_user_get_message_blacklist(self):
         json = [{"title": "CasaCatarina", "text": "Arco do Cego, os parque!!", "fromDate": "2017-05-01T18:42:15.703112Z",
-                "toDate": "2017-06-01T18:42:15.703122Z", "location": 1,
+                "toDate": "2017-06-01T18:42:15.703122Z", "location": {"id":1},
                 "whitelist": [], "blacklist": [{"key": "clube", "value": "sporting"}]},
                 {"title": "CasaLuis", "text": "Arco do Cego, os parque!!",
                  "fromDate": "2017-05-01T18:42:15.703112Z",
-                 "toDate": "2017-06-01T18:42:15.703122Z", "location": 1,
+                 "toDate": "2017-06-01T18:42:15.703122Z", "location": {"id":1},
                  "whitelist": [], "blacklist": [{"key": "clube", "value": "benfica"}]}
                 ]
         message_serializer = MessageSerializer(data=json, many=True)
@@ -69,11 +69,11 @@ class MessageTestCase(TestCase):
 
     def test_user_get_message_whitelist(self):
         json = [{"title": "CasaCatarina", "text": "Arco do Cego, os parque!!", "fromDate": "2017-05-01T18:42:15.703112Z",
-                "toDate": "2017-06-01T18:42:15.703122Z", "location": 1,
+                "toDate": "2017-06-01T18:42:15.703122Z", "location": {"id":1},
                 "whitelist": [{"key": "clube", "value": "benfica"}], "blacklist": []},
                 {"title": "CasaLuis", "text": "Arco do Cego, os parque!!",
                  "fromDate": "2017-05-01T18:42:15.703112Z",
-                 "toDate": "2017-06-01T18:42:15.703122Z", "location": 1,
+                 "toDate": "2017-06-01T18:42:15.703122Z", "location": {"id":1},
                  "whitelist": [{"key": "clube", "value": "sporting"}], "blacklist": []},
                 ]
         message_serializer = MessageSerializer(data=json, many=True)
@@ -89,11 +89,11 @@ class MessageTestCase(TestCase):
 
     def test_user_not_get_message_whitelist(self):
         json = [{"title": "CasaCatarina", "text": "Arco do Cego, os parque!!", "fromDate": "2017-05-01T18:42:15.703112Z",
-                "toDate": "2017-06-01T18:42:15.703122Z", "location": 1,
+                "toDate": "2017-06-01T18:42:15.703122Z", "location": {"id":1},
                 "whitelist": [{"key": "clube", "value": "benfica"}], "blacklist": []},
                 {"title": "CasaLuis", "text": "Arco do Cego, os parque!!",
                  "fromDate": "2017-05-01T18:42:15.703112Z",
-                 "toDate": "2017-06-01T18:42:15.703122Z", "location": 1,
+                 "toDate": "2017-06-01T18:42:15.703122Z", "location": {"id":1},
                  "whitelist": [{"key": "clube", "value": "benfica"}], "blacklist": []},
                 ]
         message_serializer = MessageSerializer(data=json, many=True)
@@ -108,11 +108,11 @@ class MessageTestCase(TestCase):
 
     def test_user_not_get_message_blacklist(self):
         json = [{"title": "CasaCatarina", "text": "Arco do Cego, os parque!!", "fromDate": "2017-05-01T18:42:15.703112Z",
-                "toDate": "2017-06-01T18:42:15.703122Z", "location": 1,
+                "toDate": "2017-06-01T18:42:15.703122Z", "location": {"id":1},
                 "whitelist": [{"key": "clube", "value": "benfica"}], "blacklist": []},
                 {"title": "CasaLuis", "text": "Arco do Cego, os parque!!",
                  "fromDate": "2017-05-01T18:42:15.703112Z",
-                 "toDate": "2017-06-01T18:42:15.703122Z", "location": 1,
+                 "toDate": "2017-06-01T18:42:15.703122Z", "location": {"id":1},
                  "whitelist": [], "blacklist": [{"key": "clube", "value": "sporting"}]},
                 ]
         message_serializer = MessageSerializer(data=json, many=True)
@@ -127,11 +127,11 @@ class MessageTestCase(TestCase):
 
     def test_user_not_get_message_wrong_date(self):
         json = [{"title": "CasaCatarina", "text": "Arco do Cego, os parque!!", "fromDate": "2017-05-01T18:42:15.703112Z",
-                "toDate": "2017-06-01T18:42:15.703122Z", "location": 1,
+                "toDate": "2017-06-01T18:42:15.703122Z", "location": {"id":1},
                 "whitelist": [], "blacklist": []},
                 {"title": "CasaLuis", "text": "Arco do Cego, os parque!!",
                  "fromDate": "2017-05-01T18:42:15.703112Z",
-                 "toDate": "2017-06-01T18:42:15.703122Z", "location": 1,
+                 "toDate": "2017-06-01T18:42:15.703122Z", "location": {"id":1},
                  "whitelist": [], "blacklist": []},
                 ]
         message_serializer = MessageSerializer(data=json, many=True)
@@ -148,7 +148,7 @@ class MessageTestCase(TestCase):
         json = [
                 {"title": "CasaLuis", "text": "Arco do Cego, os parque!!",
                  "fromDate": "2017-05-01T18:42:15.703112Z",
-                 "toDate": "2017-06-01T18:42:15.703122Z", "location": 1,
+                 "toDate": "2017-06-01T18:42:15.703122Z", "location": {"id":1},
                  "whitelist": [], "blacklist": []},
                 ]
         message_serializer = MessageSerializer(data=json, many=True)

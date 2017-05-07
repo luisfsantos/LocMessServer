@@ -35,19 +35,25 @@ class BlacklistSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("key " + value + " does not exist")
 
 
+class MessageLocationSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    name = serializers.CharField(required=False, read_only=True)
+
+
 class MessageSerializer(serializers.ModelSerializer):
-    location = serializers.IntegerField(source="location.id")
-    whitelist = WhitelistSerializer(many=True)
-    blacklist = BlacklistSerializer(many=True)
+    location = MessageLocationSerializer()
+    author = serializers.CharField(source="author.username", read_only=True)
+    whitelist = WhitelistSerializer(many=True, write_only=True, required=False)
+    blacklist = BlacklistSerializer(many=True, write_only=True, required=False)
 
     class Meta:
         model = Message
-        fields = ('id', 'title', 'text', 'fromDate', 'toDate', 'location', 'whitelist', 'blacklist')
+        fields = ('id', 'title', 'text', 'author', 'fromDate', 'toDate', 'location', 'whitelist', 'blacklist')
         read_only_fields = ('id', )
 
     def validate_location(self, value):
         try:
-            Location.objects.get(id=value)
+            Location.objects.get(id=value["id"])
             return value
         except Location.DoesNotExist:
             raise serializers.ValidationError("location does not exist")
